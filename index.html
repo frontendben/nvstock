@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIZ IS HOTY</title>
+    <title>Minecraft Item & Block Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -114,7 +114,7 @@
 
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
-                BIZ IS HOTTY
+                Minecraft Block & Item Explorer
             </h1>
             <button id="nav-button" class="bg-brown-500 text-white font-bold py-3 px-6 rounded-sm">
                 Add New Item
@@ -183,10 +183,15 @@
 
     <div id="edit-modal" class="modal hidden">
         <div class="modal-content text-center space-y-4">
-            <h2 class="text-2xl font-bold">Edit Item Name</h2>
+            <h2 class="text-2xl font-bold">Edit Item Name & Color</h2>
             <div class="space-y-2">
                 <p>New Item Name:</p>
                 <input type="text" id="edit-item-name-input" placeholder="Enter new name here..." class="w-full">
+            </div>
+            <p class="text-gray-400">OR</p>
+            <div class="space-y-2">
+                <p>Change Placeholder Color:</p>
+                <input type="color" id="edit-color-picker" class="w-full h-10 cursor-pointer">
             </div>
             <div class="flex justify-center gap-4 pt-4">
                 <button id="save-edit-button" class="bg-green-500 text-white font-bold py-2 px-4 rounded-sm">
@@ -210,7 +215,7 @@
         // 3. Under "Your apps", click the "</>" icon to create a web app.
         // 4. Copy the `firebaseConfig` object and paste it below.
         
-const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyCM1nKTv3n_0L-1JU7yndNGQ6gAWadjdv4",
             authDomain: "nvdb-59a42.firebaseapp.com",
             projectId: "nvdb-59a42",
@@ -218,6 +223,7 @@ const firebaseConfig = {
             messagingSenderId: "170554097853",
             appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
             measurementId: "G-9C1H7S6TVD"
+            // measurementId is optional
         };
         
         // This is only for the specific Google development environment and can be ignored for local development or general deployment.
@@ -249,6 +255,7 @@ const firebaseConfig = {
         const addNewItemButton = document.getElementById('add-new-item-button');
         const editModal = document.getElementById('edit-modal');
         const editItemNameInput = document.getElementById('edit-item-name-input');
+        const editColorPicker = document.getElementById('edit-color-picker');
         const saveEditButton = document.getElementById('save-edit-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
         
@@ -396,9 +403,19 @@ const firebaseConfig = {
 
         saveEditButton.addEventListener('click', async () => {
             const newName = editItemNameInput.value.trim();
+            const color = editColorPicker.value;
+            let finalName = currentItemName;
+
+            // Handle name change
             if (newName && newName !== currentItemName) {
                 await renameItem(currentItemName, newName);
+                finalName = newName; // Use the new name for subsequent updates
             }
+
+            // Handle color change
+            const newImage = `https://placehold.co/128x128/${color.replace('#', '')}/ffffff?text=${encodeURIComponent(finalName)}`;
+            await updateItem(finalName, { image: newImage });
+
             editModal.classList.add('hidden');
         });
 
@@ -424,6 +441,24 @@ const firebaseConfig = {
                 }
             } catch (error) {
                 console.error("Error renaming document: ", error);
+            }
+        };
+
+        /**
+         * Updates a specific field for an item in the community inventory.
+         * @param {string} itemName - The name of the item to update.
+         * @param {object} updates - An object containing the fields to update.
+         */
+        const updateItem = async (itemName, updates) => {
+            if (!userId) {
+                console.error("User not authenticated.");
+                return;
+            }
+            try {
+                const itemRef = doc(db, 'communityInventory', itemName);
+                await updateDoc(itemRef, updates);
+            } catch (error) {
+                console.error("Error updating document: ", error);
             }
         };
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOTY-Biz</title>
+    <title>BIZ IS HOTY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -114,7 +114,7 @@
 
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
-                HOTY ITEM & BLOCK STASH
+                BIZ IS HOTTY
             </h1>
             <button id="nav-button" class="bg-brown-500 text-white font-bold py-3 px-6 rounded-sm">
                 Add New Item
@@ -204,7 +204,13 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, increment, collection, query, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+        // --- IMPORTANT: PASTE YOUR FIREBASE CONFIG HERE ---
+        // 1. Go to your Firebase project console: https://console.firebase.google.com/
+        // 2. Click the "Project settings" gear icon.
+        // 3. Under "Your apps", click the "</>" icon to create a web app.
+        // 4. Copy the `firebaseConfig` object and paste it below.
+        
+const firebaseConfig = {
             apiKey: "AIzaSyCM1nKTv3n_0L-1JU7yndNGQ6gAWadjdv4",
             authDomain: "nvdb-59a42.firebaseapp.com",
             projectId: "nvdb-59a42",
@@ -212,7 +218,6 @@
             messagingSenderId: "170554097853",
             appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
             measurementId: "G-9C1H7S6TVD"
-            // measurementId is optional
         };
         
         // This is only for the specific Google development environment and can be ignored for local development or general deployment.
@@ -381,8 +386,6 @@
             currentItemName = itemName;
             currentItemData = inventory[itemName];
             editItemNameInput.value = currentItemName;
-            editImageUrlInput.value = ''; // Clear previous input
-            editColorPicker.value = '#000000'; // Reset color picker
             editModal.classList.remove('hidden');
         };
 
@@ -393,30 +396,12 @@
 
         saveEditButton.addEventListener('click', async () => {
             const newName = editItemNameInput.value.trim();
-            const imageUrl = editImageUrlInput.value.trim();
-            const color = editColorPicker.value;
-
-            // Check if name has changed
             if (newName && newName !== currentItemName) {
                 await renameItem(currentItemName, newName);
-                currentItemName = newName; // Update currentItemName to the new name
             }
-
-            // Check if image needs updating
-            if (imageUrl || color) {
-                let newImage = currentItemData.image; // Start with existing image
-                if (imageUrl) {
-                    newImage = imageUrl;
-                } else {
-                    const text = newName ? encodeURIComponent(newName) : encodeURIComponent(currentItemName);
-                    newImage = `https://placehold.co/128x128/${color.replace('#', '')}/ffffff?text=${text}`;
-                }
-                await updateItem(currentItemName, { image: newImage });
-            }
-
             editModal.classList.add('hidden');
         });
-        
+
         /**
          * Renames an item in the community inventory.
          * @param {string} oldName - The current name of the item.
@@ -439,24 +424,6 @@
                 }
             } catch (error) {
                 console.error("Error renaming document: ", error);
-            }
-        };
-
-        /**
-         * Updates a specific field for an item in the community inventory.
-         * @param {string} itemName - The name of the item to update.
-         * @param {object} updates - An object containing the fields to update.
-         */
-        const updateItem = async (itemName, updates) => {
-            if (!userId) {
-                console.error("User not authenticated.");
-                return;
-            }
-            try {
-                const itemRef = doc(db, 'communityInventory', itemName);
-                await updateDoc(itemRef, updates);
-            } catch (error) {
-                console.error("Error updating document: ", error);
             }
         };
 

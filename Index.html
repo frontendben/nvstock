@@ -223,9 +223,17 @@
         import { getFirestore, doc, onSnapshot, setDoc, increment, collection, query, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables provided by the environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+         const firebaseConfig = {
+             apiKey: "AIzaSyCM1nKTv3n_0L-1JU7yndNGQ6gAWadjdv4",
+        authDomain: "nvdb-59a42.firebaseapp.com",
+        projectId: "nvdb-59a42",
+             storageBucket: "nvdb-59a42.firebasestorage.app",
+             messagingSenderId: "170554097853",
+        appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
+        measurementId: "G-9C1H7S6TVD"
+        };
+        const appId = "nvdb-59a42";
+        const initialAuthToken = null; // No custom auth token is needed for this simple setup
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);

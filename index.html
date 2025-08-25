@@ -176,7 +176,7 @@
                     <option value="Tools">Tools</option>
                     <option value="Food">Food</option>
                     <option value="Materials">Materials</option>
-                    <option value="Combat">Combat</option>
+                    <option value="Combat">Combat</soption>
                     <option value="Decorations">Decorations</option>
                 </select>
             </div>
@@ -222,19 +222,31 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, increment, collection, query, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global variables provided by the environment
-        const firebaseConfig = {
-            apiKey: "AIzaSyCM1nKTv3n_0L-1JU7yndNGQ6gAWadjdv4",
-            authDomain: "nvdb-59a42.firebaseapp.com",
-            projectId: "nvdb-59a42",
-            storageBucket: "nvdb-59a42.firebasestorage.app",
-            messagingSenderId: "170554097853",
-            appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
-            measurementId: "G-9C1H7S6TVD"
-        };
-        const appId = "1:170554097853:web:2b9eed6f4600c7a795b7d4";
-        const initialAuthToken = null; // No custom auth token is needed for this simple setup
+        // This is the conditional block to handle both local preview and live site deployment
+        let firebaseConfig;
+        let appId;
+        let initialAuthToken;
 
+        if (typeof __firebase_config !== 'undefined' && __firebase_config !== null) {
+            // Running in the Canvas environment, use provided variables
+            firebaseConfig = JSON.parse(__firebase_config);
+            appId = __app_id;
+            initialAuthToken = __initial_auth_token;
+        } else {
+            // Running on a live site like GitHub Pages, use hardcoded credentials
+            firebaseConfig = {
+                apiKey: "AIzaSyCM1nKTv3n_0L-1JU7yndNGQ6gAWadjdv4",
+                authDomain: "nvdb-59a42.firebaseapp.com",
+                projectId: "nvdb-59a42",
+                storageBucket: "nvdb-59a42.firebasestorage.app",
+                messagingSenderId: "170554097853",
+                appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
+                measurementId: "G-9C1H7S6TVD"
+            };
+            appId = "1:170554097853:web:2b9eed6f4600c7a795b7d4";
+            initialAuthToken = null;
+        }
+        
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -449,16 +461,15 @@
             }
             try {
                 const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
-                const itemDoc = await getDoc(itemRef);
-
-                let category = inventory[itemName]?.category || 'Custom';
-                let image = inventory[itemName]?.image || `https://placehold.co/128x128/000000/ffffff?text=${encodeURIComponent(itemName)}`;
                 
-                if (itemDoc.exists()) {
-                    await updateDoc(itemRef, { count: increment(amount) });
-                } else {
-                    await setDoc(itemRef, { name: itemName, category, image, count: amount > 0 ? amount : 0 });
-                }
+                // Use a single setDoc with merge:true for robust updates
+                await setDoc(itemRef, {
+                    name: itemName,
+                    category: inventory[itemName]?.category || 'Custom',
+                    image: inventory[itemName]?.image || `https://placehold.co/128x128/000000/ffffff?text=${encodeURIComponent(itemName)}`,
+                    count: increment(amount)
+                }, { merge: true });
+
             } catch (error) {
                 console.error("Error updating document: ", error);
             }

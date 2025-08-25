@@ -417,7 +417,7 @@
         });
 
         /**
-         * Adds a new item to the user's inventory.
+         * Adds a new item to the community inventory.
          */
         addNewItemButton.addEventListener('click', async () => {
             const newItemName = newItemInput.value.trim();
@@ -431,7 +431,7 @@
         });
 
         /**
-         * Updates the item count in the Firestore database by incrementing/decrementing.
+         * Updates the item count in the community inventory by incrementing/decrementing.
          * @param {string} itemName - The name of the item.
          * @param {number} amount - The amount to increment or decrement.
          */
@@ -441,7 +441,7 @@
                 return;
             }
             try {
-                const itemRef = doc(db, `users/${userId}/inventoryItems`, itemName);
+                const itemRef = doc(db, 'communityInventory', itemName);
                 
                 // Use a single setDoc with merge:true for robust updates
                 await setDoc(itemRef, {
@@ -457,7 +457,7 @@
         };
 
         /**
-         * Sets the item count in the Firestore database to a specific value.
+         * Sets the item count in the community inventory to a specific value.
          * @param {string} itemName - The name of the item.
          * @param {number} count - The new count to set.
          * @param {string} [category] - Optional category to set.
@@ -468,7 +468,7 @@
                 return;
             }
             try {
-                const itemRef = doc(db, `users/${userId}/inventoryItems`, itemName);
+                const itemRef = doc(db, 'communityInventory', itemName);
                 const image = inventory[itemName]?.image || `https://placehold.co/128x128/000000/ffffff?text=${encodeURIComponent(itemName)}`;
                 await setDoc(itemRef, { name: itemName, category, image, count: count });
             } catch (error) {
@@ -477,7 +477,7 @@
         };
 
         /**
-         * Updates the image of a specific item in the database.
+         * Updates the image of a specific item in the community inventory.
          * @param {string} itemName - The name of the item to edit.
          * @param {string} newImage - The new image URL to use.
          */
@@ -487,7 +487,7 @@
                 return;
             }
             try {
-                const itemRef = doc(db, `users/${userId}/inventoryItems`, itemName);
+                const itemRef = doc(db, 'communityInventory', itemName);
                 await updateDoc(itemRef, { image: newImage });
             } catch (error) {
                 console.error("Error editing image: ", error);
@@ -495,7 +495,7 @@
         };
 
         /**
-         * Deletes an item from the inventory.
+         * Deletes an item from the community inventory.
          * @param {string} itemName - The name of the item to delete.
          */
         const deleteItem = async (itemName) => {
@@ -504,7 +504,7 @@
                 return;
             }
             try {
-                const itemRef = doc(db, `users/${userId}/inventoryItems`, itemName);
+                const itemRef = doc(db, 'communityInventory', itemName);
                 await deleteDoc(itemRef);
             } catch (error) {
                 console.error("Error deleting document: ", error);
@@ -538,8 +538,9 @@
             if (user) {
                 userId = user.uid;
                 userIdSpan.textContent = userId;
-                // Path for private user data based on security rules
-                const inventoryCollectionRef = collection(db, `users/${userId}/inventoryItems`);
+                
+                // Now listening to the shared community inventory collection
+                const inventoryCollectionRef = collection(db, 'communityInventory');
                 
                 // Set up real-time listener for the inventory
                 onSnapshot(inventoryCollectionRef, (querySnapshot) => {

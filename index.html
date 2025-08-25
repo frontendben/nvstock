@@ -183,10 +183,19 @@
 
     <div id="edit-modal" class="modal hidden">
         <div class="modal-content text-center space-y-4">
-            <h2 class="text-2xl font-bold">Edit Item Name</h2>
+            <h2 class="text-2xl font-bold">Edit Item Icon & Name</h2>
             <div class="space-y-2">
                 <p>New Item Name:</p>
                 <input type="text" id="edit-item-name-input" placeholder="Enter new name here..." class="w-full">
+            </div>
+            <div class="space-y-2">
+                <p>New Image URL:</p>
+                <input type="text" id="edit-image-url" placeholder="Paste image URL here..." class="w-full">
+            </div>
+            <p class="text-gray-400">OR</p>
+            <div class="space-y-2">
+                <p>Change Placeholder Color:</p>
+                <input type="color" id="edit-color-picker" class="w-full h-10 cursor-pointer">
             </div>
             <div class="flex justify-center gap-4 pt-4">
                 <button id="save-edit-button" class="bg-green-500 text-white font-bold py-2 px-4 rounded-sm">
@@ -218,7 +227,6 @@
             messagingSenderId: "170554097853",
             appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
             measurementId: "G-9C1H7S6TVD"
-            // measurementId is optional
         };
         
         // This is only for the specific Google development environment and can be ignored for local development or general deployment.
@@ -250,6 +258,8 @@
         const addNewItemButton = document.getElementById('add-new-item-button');
         const editModal = document.getElementById('edit-modal');
         const editItemNameInput = document.getElementById('edit-item-name-input');
+        const editImageUrlInput = document.getElementById('edit-image-url');
+        const editColorPicker = document.getElementById('edit-color-picker');
         const saveEditButton = document.getElementById('save-edit-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
         
@@ -387,6 +397,7 @@
             currentItemName = itemName;
             currentItemData = inventory[itemName];
             editItemNameInput.value = currentItemName;
+            editImageUrlInput.value = currentItemData.image.startsWith('https://placehold.co') ? '' : currentItemData.image;
             editModal.classList.remove('hidden');
         };
 
@@ -397,12 +408,27 @@
 
         saveEditButton.addEventListener('click', async () => {
             const newName = editItemNameInput.value.trim();
+            const imageUrl = editImageUrlInput.value.trim();
+            const color = editColorPicker.value;
+
             if (newName && newName !== currentItemName) {
                 await renameItem(currentItemName, newName);
             }
+
+            let newImage = currentItemData.image;
+            if (imageUrl) {
+                newImage = imageUrl;
+            } else {
+                // Generate new placeholder image URL with the selected color
+                const text = newName ? encodeURIComponent(newName) : encodeURIComponent(currentItemName);
+                newImage = `https://placehold.co/128x128/${color.replace('#', '')}/ffffff?text=${text}`;
+            }
+
+            await updateItem(newName || currentItemName, { image: newImage });
+
             editModal.classList.add('hidden');
         });
-
+        
         /**
          * Renames an item in the community inventory.
          * @param {string} oldName - The current name of the item.
@@ -425,6 +451,24 @@
                 }
             } catch (error) {
                 console.error("Error renaming document: ", error);
+            }
+        };
+
+        /**
+         * Updates a specific field for an item in the community inventory.
+         * @param {string} itemName - The name of the item to update.
+         * @param {object} updates - An object containing the fields to update.
+         */
+        const updateItem = async (itemName, updates) => {
+            if (!userId) {
+                console.error("User not authenticated.");
+                return;
+            }
+            try {
+                const itemRef = doc(db, 'communityInventory', itemName);
+                await updateDoc(itemRef, updates);
+            } catch (error) {
+                console.error("Error updating document: ", error);
             }
         };
 
@@ -547,11 +591,7 @@
 
             } else {
                 try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    await signInAnonymously(auth);
                 } catch (error) {
                     console.error("Error during authentication:", error);
                 }

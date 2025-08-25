@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Item & Block Explorer</title>
+    <!-- Use Tailwind CSS for a modern, responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Minecraft-inspired pixelated font. A real pixel font would be ideal but this provides a simple, compatible alternative. */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #3c3c3c; /* Dark gray */
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* Main container with a blocky, stone-like feel */
+        .main-container {
+            background: #505050;
+            border: 4px solid #303030;
+            border-radius: 4px;
+            box-shadow: 6px 6px 0px 0px #202020;
+        }
+
+        /* Inputs and selects with blocky style */
+        input, select {
+            border: 2px solid #202020;
+            background: #7a7a7a;
+            color: #ffffff;
+            border-radius: 4px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ffffff;
+        }
+        
+        /* Buttons with a Minecraft GUI feel */
+        button {
+            border: 2px solid #202020;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0px 0px #202020;
+            transition: all 0.1s ease-in-out;
+        }
+        button:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px 0px #202020;
+        }
+        /* New brown color for the add item button */
+        .bg-brown-500 { background-color: #8b5e3e; }
+        .bg-brown-600 { background-color: #724e32; }
+        .bg-green-500 { background-color: #6a8c46; }
+        .bg-green-600 { background-color: #556b38; }
+        .bg-red-500 { background-color: #a04c4c; }
+        .bg-red-600 { background-color: #803d3d; }
+        .bg-blue-500 { background-color: #4a6c9d; }
+        .bg-blue-600 { background-color: #3b5a80; }
+        .bg-gray-700 { background-color: #7a7a7a; }
+        .bg-gray-600 { background-color: #606060; }
+
+        /* Item cards with a clean, blocky look */
+        .item-card {
+            background: #606060;
+            border: 2px solid #404040;
+            border-radius: 4px;
+            box-shadow: 4px 4px 0px 0px #404040;
+        }
+        .item-card:hover {
+            transform: none; /* No scaling on hover for a blocky feel */
+            box-shadow: 4px 4px 0px 0px #404040;
+        }
+        
+        /* Adjusted button group to prevent overflow */
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+            width: 100%;
+        }
+        .button-group > button, .button-group > div {
+            flex: 1 1 0%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Modal styling */
+        .modal {
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #505050;
+            border: 4px solid #303030;
+            border-radius: 4px;
+            box-shadow: 6px 6px 0px 0px #202020;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body class="p-4 flex flex-col items-center">
+
+    <!-- Main container for the app -->
+    <div class="w-full max-w-4xl p-6 main-container space-y-6">
+
+        <!-- Title and Nav -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
+                Minecraft Block & Item Explorer
+            </h1>
+            <button id="nav-button" class="bg-brown-500 text-white font-bold py-3 px-6 rounded-sm">
+                Add New Item
+            </button>
+        </div>
+        
+        <!-- User ID display for persistence and sharing -->
+        <div class="text-center text-sm text-gray-400">
+            Your User ID: <span id="user-id" class="font-mono bg-gray-700 px-2 py-1 rounded">Loading...</span>
+        </div>
+
+        <!-- Explorer Page View -->
+        <div id="explorer-view" class="space-y-6">
+            <!-- Search and Filter Controls -->
+            <div class="flex flex-col sm:flex-row gap-4 items-center">
+                <!-- Search Input -->
+                <div class="relative w-full">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <input type="text" id="search-input" placeholder="Search for a block or item..." class="w-full pl-10 pr-4 py-3 text-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <!-- Category Filter -->
+                <select id="category-filter" class="w-full sm:w-auto py-3 px-4 text-gray-200 rounded-xl border-2 border-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
+                    <option value="all">All Categories</option>
+                    <option value="Blocks">Blocks</option>
+                    <option value="Items">Items</option>
+                    <option value="Tools">Tools</option>
+                    <option value="Food">Food</option>
+                    <option value="Materials">Materials</option>
+                    <option value="Combat">Combat</option>
+                    <option value="Decorations">Decorations</option>
+                    <option value="Custom">Custom</option>
+                </select>
+            </div>
+
+            <!-- Item List Container -->
+            <div id="item-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 py-4">
+                <!-- Items will be dynamically generated here -->
+            </div>
+        </div>
+
+        <!-- Add Item Page View -->
+        <div id="add-item-view" class="hidden flex flex-col items-center justify-center p-8 space-y-6">
+            <h2 class="text-2xl sm:text-3xl font-bold text-center">Add a New Custom Item</h2>
+            <p class="text-gray-400 text-center">Type the name of any block or item and select a category to add it to your inventory.</p>
+            <div class="flex flex-col sm:flex-row gap-4 w-full max-w-lg">
+                <input type="text" id="new-item-input" placeholder="Enter new item name..." class="w-full pl-4 pr-4 py-3 text-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <select id="new-item-category" class="w-full sm:w-auto py-3 px-4 text-gray-200 rounded-xl border-2 border-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
+                    <option value="Custom">Custom</option>
+                    <option value="Blocks">Blocks</option>
+                    <option value="Items">Items</option>
+                    <option value="Tools">Tools</option>
+                    <option value="Food">Food</option>
+                    <option value="Materials">Materials</option>
+                    <option value="Combat">Combat</option>
+                    <option value="Decorations">Decorations</option>
+                </select>
+            </div>
+            <div class="w-full max-w-lg">
+                <button id="add-new-item-button" class="w-full bg-brown-500 text-white font-bold py-3 px-6 rounded-sm">
+                    <i class="fas fa-plus mr-2"></i> Add Item
+                </button>
+            </div>
+            <button id="back-button" class="bg-gray-700 text-gray-200 font-bold py-2 px-4 rounded-sm">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Explorer
+                </button>
+        </div>
+
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-content text-center space-y-4">
+            <h2 class="text-2xl font-bold">Edit Item Icon</h2>
+            <div class="space-y-2">
+                <p>New Image URL:</p>
+                <input type="text" id="edit-image-url" placeholder="Paste image URL here..." class="w-full">
+            </div>
+            <p class="text-gray-400">OR</p>
+            <div class="space-y-2">
+                <p>Change Placeholder Color:</p>
+                <input type="color" id="edit-color-picker" class="w-full h-10 cursor-pointer">
+            </div>
+            <div class="flex justify-center gap-4 pt-4">
+                <button id="save-edit-button" class="bg-green-500 text-white font-bold py-2 px-4 rounded-sm">
+                    Save
+                </button>
+                <button id="cancel-edit-button" class="bg-red-500 text-white font-bold py-2 px-4 rounded-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, increment, collection, query, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by the environment
+        const firebaseConfig = {
+            apiKey: "AIzaSyCM1nKTv3n_0L-1JU7yndNGQ6gAWadjdv4",
+            authDomain: "nvdb-59a42.firebaseapp.com",
+            projectId: "nvdb-59a42",
+            storageBucket: "nvdb-59a42.firebasestorage.app",
+            messagingSenderId: "170554097853",
+            appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
+            measurementId: "G-9C1H7S6TVD"
+        };
+        const appId = "nvdb-59a42";
+        const initialAuthToken = null; // No custom auth token is needed for this simple setup
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // State management
+        let userId = null;
+        let inventory = {};
+        let currentPage = 'explorer';
+        let currentItemName = null;
+
+        // HTML elements
+        const explorerView = document.getElementById('explorer-view');
+        const addItemView = document.getElementById('add-item-view');
+        const navButton = document.getElementById('nav-button');
+        const backButton = document.getElementById('back-button');
+        const searchInput = document.getElementById('search-input');
+        const categoryFilter = document.getElementById('category-filter');
+        const itemList = document.getElementById('item-list');
+        const userIdSpan = document.getElementById('user-id');
+        const newItemInput = document.getElementById('new-item-input');
+        const newItemCategory = document.getElementById('new-item-category');
+        const addNewItemButton = document.getElementById('add-new-item-button');
+        const editModal = document.getElementById('edit-modal');
+        const editImageUrlInput = document.getElementById('edit-image-url');
+        const editColorPicker = document.getElementById('edit-color-picker');
+        const saveEditButton = document.getElementById('save-edit-button');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+        
+        /**
+         * Renders the given list of items into the item-list container.
+         * @param {Array} items - The array of item objects to render.
+         */
+        const renderItems = (items) => {
+            itemList.innerHTML = ''; // Clear previous items
+            if (items.length === 0) {
+                itemList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No items found. Add some new items to get started!</p>';
+                return;
+            }
+            items.forEach(item => {
+                const count = inventory[item.name]?.count || 0;
+                const itemCard = document.createElement('div');
+                itemCard.classList.add('bg-gray-700', 'p-4', 'shadow-md', 'flex', 'flex-col', 'items-center', 'space-y-2', 'relative', 'item-card');
+                itemCard.dataset.itemName = item.name;
+
+                // Inventory count badge
+                const countBadge = document.createElement('span');
+                countBadge.classList.add('absolute', 'top-2', 'right-2', 'bg-blue-500', 'text-white', 'text-2xl', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
+                countBadge.textContent = count;
+                itemCard.appendChild(countBadge);
+
+                let deleteButtonHTML = `
+                    <button class="delete-button bg-red-500 text-white p-2">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                 let editButtonHTML = `
+                    <button class="edit-button bg-blue-500 text-white p-2">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                `;
+
+                itemCard.innerHTML += `
+                    <img src="${item.image}" alt="${item.name}" class="w-24 h-24 sm:w-20 sm:h-20 rounded-lg object-cover">
+                    <p class="text-sm sm:text-base text-center font-medium">${item.name}</p>
+                    <span class="text-xs text-gray-400 px-2 py-1 bg-gray-600 rounded-full">${item.category}</span>
+                    <div class="flex items-center gap-2 mt-2">
+                        <input type="number" value="${count}" min="0" data-item-name="${item.name}" class="w-16 text-center text-gray-200 rounded-xl px-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <button class="set-button bg-blue-500 text-white p-2">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                    <div class="button-group mt-2">
+                        <button class="add-button bg-green-500 text-white p-2">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="remove-button bg-red-500 text-white p-2">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="add-64-button bg-green-500 text-white font-bold p-2 text-xs">+64</button>
+                        <button class="remove-64-button bg-red-500 text-white font-bold p-2 text-xs">-64</button>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        ${editButtonHTML}
+                        ${deleteButtonHTML}
+                    </div>
+                `;
+                itemList.appendChild(itemCard);
+            });
+        };
+
+        /**
+         * Navigates between views.
+         * @param {string} view - 'explorer' or 'addItem'.
+         */
+        const navigateTo = (view) => {
+            currentPage = view;
+            if (view === 'explorer') {
+                explorerView.classList.remove('hidden');
+                addItemView.classList.add('hidden');
+                navButton.textContent = 'Add New Item';
+                filterItems(); // Re-render the explorer view
+            } else {
+                explorerView.classList.add('hidden');
+                addItemView.classList.remove('hidden');
+                navButton.textContent = 'Back to Explorer';
+            }
+        };
+
+        // Add event listeners for navigation
+        navButton.addEventListener('click', () => {
+            if (currentPage === 'explorer') {
+                navigateTo('addItem');
+            } else {
+                navigateTo('explorer');
+            }
+        });
+
+        backButton.addEventListener('click', () => {
+            navigateTo('explorer');
+        });
+
+        // Event delegation for button clicks
+        itemList.addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            if (!button) return;
+
+            const itemCard = button.closest('[data-item-name]');
+            if (!itemCard) return;
+
+            const itemName = itemCard.dataset.itemName;
+
+            if (button.classList.contains('add-button')) {
+                updateInventory(itemName, 1);
+            } else if (button.classList.contains('add-64-button')) {
+                updateInventory(itemName, 64);
+            } else if (button.classList.contains('remove-button')) {
+                updateInventory(itemName, -1);
+            } else if (button.classList.contains('remove-64-button')) {
+                updateInventory(itemName, -64);
+            } else if (button.classList.contains('set-button')) {
+                const inputElement = itemCard.querySelector(`input[data-item-name="${itemName}"]`);
+                const count = parseInt(inputElement.value, 10);
+                if (!isNaN(count) && count >= 0) {
+                    setInventory(itemName, count, inventory[itemName]?.category);
+                }
+            } else if (button.classList.contains('delete-button')) {
+                 if (confirm(`Are you sure you want to delete ${itemName}?`)) {
+                    deleteItem(itemName);
+                }
+            } else if (button.classList.contains('edit-button')) {
+                openEditModal(itemName);
+            }
+        });
+
+        /**
+         * Opens the edit modal for a specific item.
+         * @param {string} itemName - The name of the item to edit.
+         */
+        const openEditModal = (itemName) => {
+            currentItemName = itemName;
+            editImageUrlInput.value = ''; // Clear previous input
+            editColorPicker.value = '#000000'; // Reset color picker
+            editModal.classList.remove('hidden');
+        };
+
+        // Add event listeners for the edit modal
+        cancelEditButton.addEventListener('click', () => {
+            editModal.classList.add('hidden');
+        });
+
+        saveEditButton.addEventListener('click', () => {
+            const imageUrl = editImageUrlInput.value.trim();
+            const color = editColorPicker.value;
+            let newImage = '';
+
+            if (imageUrl) {
+                newImage = imageUrl;
+            } else {
+                // Generate new placeholder image URL with the selected color
+                const text = encodeURIComponent(currentItemName);
+                newImage = `https://placehold.co/128x128/${color.replace('#', '')}/ffffff?text=${text}`;
+            }
+
+            editItemImage(currentItemName, newImage);
+            editModal.classList.add('hidden');
+        });
+
+        /**
+         * Adds a new item to the user's inventory.
+         */
+        addNewItemButton.addEventListener('click', async () => {
+            const newItemName = newItemInput.value.trim();
+            const newItemCat = newItemCategory.value;
+            if (newItemName) {
+                const normalizedName = newItemName.charAt(0).toUpperCase() + newItemName.slice(1);
+                await setInventory(normalizedName, 0, newItemCat);
+                newItemInput.value = ''; // Clear the input
+                navigateTo('explorer');
+            }
+        });
+
+        /**
+         * Updates the item count in the Firestore database by incrementing/decrementing.
+         * @param {string} itemName - The name of the item.
+         * @param {number} amount - The amount to increment or decrement.
+         */
+        const updateInventory = async (itemName, amount) => {
+            if (!userId) {
+                console.error("User not authenticated.");
+                return;
+            }
+            try {
+                const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
+                const itemDoc = await getDoc(itemRef);
+
+                let category = inventory[itemName]?.category || 'Custom';
+                let image = inventory[itemName]?.image || `https://placehold.co/128x128/000000/ffffff?text=${encodeURIComponent(itemName)}`;
+                
+                if (itemDoc.exists()) {
+                    await updateDoc(itemRef, { count: increment(amount) });
+                } else {
+                    await setDoc(itemRef, { name: itemName, category, image, count: amount > 0 ? amount : 0 });
+                }
+            } catch (error) {
+                console.error("Error updating document: ", error);
+            }
+        };
+
+        /**
+         * Sets the item count in the Firestore database to a specific value.
+         * @param {string} itemName - The name of the item.
+         * @param {number} count - The new count to set.
+         * @param {string} [category] - Optional category to set.
+         */
+        const setInventory = async (itemName, count, category = 'Custom') => {
+            if (!userId) {
+                console.error("User not authenticated.");
+                return;
+            }
+            try {
+                const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
+                const image = inventory[itemName]?.image || `https://placehold.co/128x128/000000/ffffff?text=${encodeURIComponent(itemName)}`;
+                await setDoc(itemRef, { name: itemName, category, image, count: count });
+            } catch (error) {
+                console.error("Error setting document: ", error);
+            }
+        };
+
+        /**
+         * Updates the image of a specific item in the database.
+         * @param {string} itemName - The name of the item to edit.
+         * @param {string} newImage - The new image URL to use.
+         */
+        const editItemImage = async (itemName, newImage) => {
+            if (!userId) {
+                console.error("User not authenticated.");
+                return;
+            }
+            try {
+                const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
+                await updateDoc(itemRef, { image: newImage });
+            } catch (error) {
+                console.error("Error editing image: ", error);
+            }
+        };
+
+        /**
+         * Deletes an item from the inventory.
+         * @param {string} itemName - The name of the item to delete.
+         */
+        const deleteItem = async (itemName) => {
+            if (!userId) {
+                console.error("User not authenticated.");
+                return;
+            }
+            try {
+                const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
+                await deleteDoc(itemRef);
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+            }
+        };
+
+        /**
+         * Filters the items based on search query and category.
+         */
+        const filterItems = () => {
+            const searchQuery = searchInput.value.toLowerCase();
+            const selectedCategory = categoryFilter.value;
+            
+            // Get all items from the inventory
+            const allItems = Object.keys(inventory).map(key => ({
+                name: key,
+                category: inventory[key]?.category || 'Custom',
+                image: inventory[key]?.image || `https://placehold.co/128x128/000000/ffffff?text=${encodeURIComponent(key)}`
+            }));
+
+            const filteredItems = allItems.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchQuery);
+                const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+                return matchesSearch && matchesCategory;
+            });
+            renderItems(filteredItems);
+        };
+        
+        // Listen for authentication state changes and initialize database listeners
+        const unsubscribeAuth = auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                userId = user.uid;
+                userIdSpan.textContent = userId;
+                // Path for private user data based on security rules
+                const inventoryCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/inventoryItems`);
+                
+                // Set up real-time listener for the inventory
+                onSnapshot(inventoryCollectionRef, (querySnapshot) => {
+                    inventory = {}; // Clear inventory to prevent duplicates
+                    querySnapshot.forEach((doc) => {
+                        inventory[doc.id] = doc.data();
+                    });
+                    filterItems(); // Re-render with updated inventory counts
+                });
+
+            } else {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Error during authentication:", error);
+                }
+            }
+        });
+
+        // Add event listeners for filtering
+        searchInput.addEventListener('keyup', filterItems);
+        categoryFilter.addEventListener('change', filterItems);
+        
+        // Initial render
+        navigateTo('explorer');
+
+        // Clean up on component unmount (not strictly necessary for this context but good practice)
+        window.addEventListener('beforeunload', () => {
+            unsubscribeAuth();
+        });
+    </script>
+</body>
+</html>

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minecraft Item & Block Explorer</title>
-    <!-- Use Tailwind CSS for a modern, responsive design -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -111,10 +110,8 @@
 </head>
 <body class="p-4 flex flex-col items-center">
 
-    <!-- Main container for the app -->
     <div class="w-full max-w-4xl p-6 main-container space-y-6">
 
-        <!-- Title and Nav -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
                 Minecraft Block & Item Explorer
@@ -124,16 +121,12 @@
             </button>
         </div>
         
-        <!-- User ID display for persistence and sharing -->
         <div class="text-center text-sm text-gray-400">
             Your User ID: <span id="user-id" class="font-mono bg-gray-700 px-2 py-1 rounded">Loading...</span>
         </div>
 
-        <!-- Explorer Page View -->
         <div id="explorer-view" class="space-y-6">
-            <!-- Search and Filter Controls -->
             <div class="flex flex-col sm:flex-row gap-4 items-center">
-                <!-- Search Input -->
                 <div class="relative w-full">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -143,7 +136,6 @@
                     <input type="text" id="search-input" placeholder="Search for a block or item..." class="w-full pl-10 pr-4 py-3 text-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
 
-                <!-- Category Filter -->
                 <select id="category-filter" class="w-full sm:w-auto py-3 px-4 text-gray-200 rounded-xl border-2 border-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer">
                     <option value="all">All Categories</option>
                     <option value="Blocks">Blocks</option>
@@ -157,13 +149,10 @@
                 </select>
             </div>
 
-            <!-- Item List Container -->
             <div id="item-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 py-4">
-                <!-- Items will be dynamically generated here -->
-            </div>
+                </div>
         </div>
 
-        <!-- Add Item Page View -->
         <div id="add-item-view" class="hidden flex flex-col items-center justify-center p-8 space-y-6">
             <h2 class="text-2xl sm:text-3xl font-bold text-center">Add a New Custom Item</h2>
             <p class="text-gray-400 text-center">Type the name of any block or item and select a category to add it to your inventory.</p>
@@ -192,7 +181,6 @@
 
     </div>
 
-    <!-- Edit Item Modal -->
     <div id="edit-modal" class="modal hidden">
         <div class="modal-content text-center space-y-4">
             <h2 class="text-2xl font-bold">Edit Item Icon</h2>
@@ -216,36 +204,29 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, increment, collection, query, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // This is the conditional block to handle both local preview and live site deployment
-        let firebaseConfig;
-        let appId;
-        let initialAuthToken;
-
-        if (typeof __firebase_config !== 'undefined' && __firebase_config !== null) {
-            // Running in the Canvas environment, use provided variables
-            firebaseConfig = JSON.parse(__firebase_config);
-            appId = __app_id;
-            initialAuthToken = __initial_auth_token;
-        } else {
-            // Running on a live site like GitHub Pages, use hardcoded credentials
-            firebaseConfig = {
-                apiKey: "AIzaSyCM1nKTv3n_0L-1JU7yndNGQ6gAWadjdv4",
-                authDomain: "nvdb-59a42.firebaseapp.com",
-                projectId: "nvdb-59a42",
-                storageBucket: "nvdb-59a42.firebasestorage.app",
-                messagingSenderId: "170554097853",
-                appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
-                measurementId: "G-9C1H7S6TVD"
-            };
-            appId = "1:170554097853:web:2b9eed6f4600c7a795b7d4";
-            initialAuthToken = null;
-        }
+        // --- IMPORTANT: PASTE YOUR FIREBASE CONFIG HERE ---
+        // 1. Go to your Firebase project console: https://console.firebase.google.com/
+        // 2. Click the "Project settings" gear icon.
+        // 3. Under "Your apps", click the "</>" icon to create a web app.
+        // 4. Copy the `firebaseConfig` object and paste it below.
+        
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+            // measurementId is optional
+        };
+        
+        // This is only for the specific Google development environment and can be ignored for local development or general deployment.
+        const initialAuthToken = null;
         
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -460,7 +441,7 @@
                 return;
             }
             try {
-                const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
+                const itemRef = doc(db, `users/${userId}/inventoryItems`, itemName);
                 
                 // Use a single setDoc with merge:true for robust updates
                 await setDoc(itemRef, {
@@ -487,7 +468,7 @@
                 return;
             }
             try {
-                const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
+                const itemRef = doc(db, `users/${userId}/inventoryItems`, itemName);
                 const image = inventory[itemName]?.image || `https://placehold.co/128x128/000000/ffffff?text=${encodeURIComponent(itemName)}`;
                 await setDoc(itemRef, { name: itemName, category, image, count: count });
             } catch (error) {
@@ -506,7 +487,7 @@
                 return;
             }
             try {
-                const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
+                const itemRef = doc(db, `users/${userId}/inventoryItems`, itemName);
                 await updateDoc(itemRef, { image: newImage });
             } catch (error) {
                 console.error("Error editing image: ", error);
@@ -523,7 +504,7 @@
                 return;
             }
             try {
-                const itemRef = doc(db, `artifacts/${appId}/users/${userId}/inventoryItems`, itemName);
+                const itemRef = doc(db, `users/${userId}/inventoryItems`, itemName);
                 await deleteDoc(itemRef);
             } catch (error) {
                 console.error("Error deleting document: ", error);
@@ -558,7 +539,7 @@
                 userId = user.uid;
                 userIdSpan.textContent = userId;
                 // Path for private user data based on security rules
-                const inventoryCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/inventoryItems`);
+                const inventoryCollectionRef = collection(db, `users/${userId}/inventoryItems`);
                 
                 // Set up real-time listener for the inventory
                 onSnapshot(inventoryCollectionRef, (querySnapshot) => {

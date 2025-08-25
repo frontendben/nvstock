@@ -183,19 +183,10 @@
 
     <div id="edit-modal" class="modal hidden">
         <div class="modal-content text-center space-y-4">
-            <h2 class="text-2xl font-bold">Edit Item Icon & Name</h2>
+            <h2 class="text-2xl font-bold">Edit Item Name</h2>
             <div class="space-y-2">
                 <p>New Item Name:</p>
                 <input type="text" id="edit-item-name-input" placeholder="Enter new name here..." class="w-full">
-            </div>
-            <div class="space-y-2">
-                <p>New Image URL:</p>
-                <input type="text" id="edit-image-url" placeholder="Paste image URL here..." class="w-full">
-            </div>
-            <p class="text-gray-400">OR</p>
-            <div class="space-y-2">
-                <p>Change Placeholder Color:</p>
-                <input type="color" id="edit-color-picker" class="w-full h-10 cursor-pointer">
             </div>
             <div class="flex justify-center gap-4 pt-4">
                 <button id="save-edit-button" class="bg-green-500 text-white font-bold py-2 px-4 rounded-sm">
@@ -220,13 +211,13 @@
         // 4. Copy the `firebaseConfig` object and paste it below.
         
         const firebaseConfig = {
-            apiKey: "AIzaSyCM1nKTv3n_0L-1JU7yndNGQ6gAWadjdv4",
-            authDomain: "nvdb-59a42.firebaseapp.com",
-            projectId: "nvdb-59a42",
-            storageBucket: "nvdb-59a42.firebasestorage.app",
-            messagingSenderId: "170554097853",
-            appId: "1:170554097853:web:2b9eed6f4600c7a795b7d4",
-            measurementId: "G-9C1H7S6TVD"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+            // measurementId is optional
         };
         
         // This is only for the specific Google development environment and can be ignored for local development or general deployment.
@@ -258,8 +249,6 @@
         const addNewItemButton = document.getElementById('add-new-item-button');
         const editModal = document.getElementById('edit-modal');
         const editItemNameInput = document.getElementById('edit-item-name-input');
-        const editImageUrlInput = document.getElementById('edit-image-url');
-        const editColorPicker = document.getElementById('edit-color-picker');
         const saveEditButton = document.getElementById('save-edit-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
         
@@ -397,7 +386,8 @@
             currentItemName = itemName;
             currentItemData = inventory[itemName];
             editItemNameInput.value = currentItemName;
-            editImageUrlInput.value = currentItemData.image.startsWith('https://placehold.co') ? '' : currentItemData.image;
+            editImageUrlInput.value = ''; // Clear previous input
+            editColorPicker.value = '#000000'; // Reset color picker
             editModal.classList.remove('hidden');
         };
 
@@ -411,20 +401,23 @@
             const imageUrl = editImageUrlInput.value.trim();
             const color = editColorPicker.value;
 
+            // Check if name has changed
             if (newName && newName !== currentItemName) {
                 await renameItem(currentItemName, newName);
+                currentItemName = newName; // Update currentItemName to the new name
             }
 
-            let newImage = currentItemData.image;
-            if (imageUrl) {
-                newImage = imageUrl;
-            } else {
-                // Generate new placeholder image URL with the selected color
-                const text = newName ? encodeURIComponent(newName) : encodeURIComponent(currentItemName);
-                newImage = `https://placehold.co/128x128/${color.replace('#', '')}/ffffff?text=${text}`;
+            // Check if image needs updating
+            if (imageUrl || color) {
+                let newImage = currentItemData.image; // Start with existing image
+                if (imageUrl) {
+                    newImage = imageUrl;
+                } else {
+                    const text = newName ? encodeURIComponent(newName) : encodeURIComponent(currentItemName);
+                    newImage = `https://placehold.co/128x128/${color.replace('#', '')}/ffffff?text=${text}`;
+                }
+                await updateItem(currentItemName, { image: newImage });
             }
-
-            await updateItem(newName || currentItemName, { image: newImage });
 
             editModal.classList.add('hidden');
         });

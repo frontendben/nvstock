@@ -225,7 +225,6 @@
             measurementId: "G-9C1H7S6TVD"
             // measurementId is optional
         };
-        
         // This is only for the specific Google development environment and can be ignored for local development or general deployment.
         const initialAuthToken = null;
         
@@ -273,19 +272,26 @@
                 const count = inventory[item.name]?.count || 0;
                 const stacks = Math.floor(count / 64);
                 const blocks = count % 64;
+                const totalCount = count;
 
                 const itemCard = document.createElement('div');
                 itemCard.classList.add('bg-gray-700', 'p-4', 'shadow-md', 'flex', 'flex-col', 'items-center', 'space-y-2', 'relative', 'item-card');
                 itemCard.dataset.itemName = item.name;
 
-                // Stack and block count display
+                // Total count badge on the top-left
+                const totalBadge = document.createElement('span');
+                totalBadge.classList.add('absolute', 'top-2', 'left-2', 'bg-gray-800', 'text-white', 'text-xs', 'font-bold', 'rounded-full', 'px-2', 'py-1', 'ring-1', 'ring-gray-400');
+                totalBadge.textContent = totalCount;
+                itemCard.appendChild(totalBadge);
+
+                // Stack and block count bubbles on the top-right
                 const stacksBubble = document.createElement('span');
-                stacksBubble.classList.add('absolute', 'top-2', 'right-2', 'bg-blue-500', 'text-white', 'text-sm', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
+                stacksBubble.classList.add('absolute', 'top-2', 'right-2', 'bg-green-500', 'text-white', 'text-sm', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
                 stacksBubble.textContent = `${stacks}s`;
                 itemCard.appendChild(stacksBubble);
 
                 const blocksBubble = document.createElement('span');
-                blocksBubble.classList.add('absolute', 'top-10', 'right-2', 'bg-blue-500', 'text-white', 'text-sm', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
+                blocksBubble.classList.add('absolute', 'top-10', 'right-2', 'bg-red-500', 'text-white', 'text-sm', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
                 blocksBubble.textContent = `${blocks}b`;
                 itemCard.appendChild(blocksBubble);
                 

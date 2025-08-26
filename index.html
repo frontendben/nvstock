@@ -20,7 +20,7 @@
             background: #505050;
             border: 4px solid #303030;
             border-radius: 4px;
-            box-shadow: 6px 6px 0px 0px #202020;
+            box-shadow: 4px 4px 0px 0px #202020; /* Reduced shadow for flatter design */
         }
 
         /* Inputs and selects with blocky style */
@@ -46,7 +46,7 @@
             transform: translate(1px, 1px);
             box-shadow: 1px 1px 0px 0px #202020;
         }
-        /* New brown color for the add item button */
+        /* New color for the add item button */
         .bg-brown-500 { background-color: #8b5e3e; }
         .bg-brown-600 { background-color: #724e32; }
         .bg-green-500 { background-color: #6a8c46; }
@@ -57,17 +57,19 @@
         .bg-blue-600 { background-color: #3b5a80; }
         .bg-gray-700 { background-color: #7a7a7a; }
         .bg-gray-600 { background-color: #606060; }
+        .bg-stacks { background-color: #556b38; } /* Muted green for stacks */
+        .bg-blocks { background-color: #803d3d; } /* Muted red for blocks */
 
         /* Item cards with a clean, blocky look */
         .item-card {
             background: #606060;
             border: 2px solid #404040;
             border-radius: 4px;
-            box-shadow: 4px 4px 0px 0px #404040;
+            box-shadow: 2px 2px 0px 0px #404040; /* Reduced shadow */
         }
         .item-card:hover {
             transform: none; /* No scaling on hover for a blocky feel */
-            box-shadow: 4px 4px 0px 0px #404040;
+            box-shadow: 2px 2px 0px 0px #404040;
         }
         
         /* Adjusted button group to prevent overflow */
@@ -225,6 +227,7 @@
             measurementId: "G-9C1H7S6TVD"
             // measurementId is optional
         };
+        
         // This is only for the specific Google development environment and can be ignored for local development or general deployment.
         const initialAuthToken = null;
         
@@ -272,28 +275,25 @@
                 const count = inventory[item.name]?.count || 0;
                 const stacks = Math.floor(count / 64);
                 const blocks = count % 64;
-                const totalCount = count;
 
                 const itemCard = document.createElement('div');
                 itemCard.classList.add('bg-gray-700', 'p-4', 'shadow-md', 'flex', 'flex-col', 'items-center', 'space-y-2', 'relative', 'item-card');
                 itemCard.dataset.itemName = item.name;
 
-                // Total count badge on the top-left
-                const totalBadge = document.createElement('span');
-                totalBadge.classList.add('absolute', 'top-2', 'left-2', 'bg-gray-800', 'text-white', 'text-xs', 'font-bold', 'rounded-full', 'px-2', 'py-1', 'ring-1', 'ring-gray-400');
-                totalBadge.textContent = totalCount;
-                itemCard.appendChild(totalBadge);
-
-                // Stack and block count bubbles on the top-right
-                const stacksBubble = document.createElement('span');
-                stacksBubble.classList.add('absolute', 'top-2', 'right-2', 'bg-green-500', 'text-white', 'text-sm', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
-                stacksBubble.textContent = `${stacks}s`;
-                itemCard.appendChild(stacksBubble);
-
-                const blocksBubble = document.createElement('span');
-                blocksBubble.classList.add('absolute', 'top-10', 'right-2', 'bg-red-500', 'text-white', 'text-sm', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
-                blocksBubble.textContent = `${blocks}b`;
-                itemCard.appendChild(blocksBubble);
+                // Stack and block count display
+                if (stacks > 0) {
+                    const stacksBubble = document.createElement('span');
+                    stacksBubble.classList.add('absolute', 'top-2', 'right-2', 'bg-stacks', 'text-white', 'text-sm', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
+                    stacksBubble.textContent = `${stacks}s`;
+                    itemCard.appendChild(stacksBubble);
+                }
+                if (blocks > 0) {
+                    const blocksBubble = document.createElement('span');
+                    const topPosition = stacks > 0 ? 'top-10' : 'top-2';
+                    blocksBubble.classList.add('absolute', topPosition, 'right-2', 'bg-blocks', 'text-white', 'text-sm', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
+                    blocksBubble.textContent = `${blocks}b`;
+                    itemCard.appendChild(blocksBubble);
+                }
                 
                 let deleteButtonHTML = `
                     <button class="delete-button bg-red-500 text-white p-2">

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOTY</title>
+    <title>Minecraft Item & Block Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -114,7 +114,7 @@
 
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
-                BIZ IS HOTY
+                Minecraft Block & Item Explorer
             </h1>
             <button id="nav-button" class="bg-brown-500 text-white font-bold py-3 px-6 rounded-sm">
                 Add New Item
@@ -271,15 +271,18 @@
             }
             items.forEach(item => {
                 const count = inventory[item.name]?.count || 0;
+                const stacks = Math.floor(count / 64);
+                const blocks = count % 64;
+
                 const itemCard = document.createElement('div');
                 itemCard.classList.add('bg-gray-700', 'p-4', 'shadow-md', 'flex', 'flex-col', 'items-center', 'space-y-2', 'relative', 'item-card');
                 itemCard.dataset.itemName = item.name;
 
-                // Inventory count badge
-                const countBadge = document.createElement('span');
-                countBadge.classList.add('absolute', 'top-2', 'right-2', 'bg-blue-500', 'text-white', 'text-2xl', 'font-extrabold', 'rounded-full', 'w-10', 'h-10', 'flex', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800');
-                countBadge.textContent = count;
-                itemCard.appendChild(countBadge);
+                // Stack and block count display
+                const countDisplay = document.createElement('div');
+                countDisplay.classList.add('absolute', 'top-2', 'right-2', 'bg-blue-500', 'text-white', 'font-extrabold', 'rounded-sm', 'w-16', 'h-10', 'flex', 'flex-col', 'items-center', 'justify-center', 'ring-2', 'ring-gray-800', 'text-xs');
+                countDisplay.innerHTML = `<span class="font-bold">${stacks}s</span> <span class="text-white">${blocks}b</span>`;
+                itemCard.appendChild(countDisplay);
 
                 let deleteButtonHTML = `
                     <button class="delete-button bg-red-500 text-white p-2">
